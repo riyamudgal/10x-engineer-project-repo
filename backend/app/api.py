@@ -113,6 +113,11 @@ def update_prompt(prompt_id: str, prompt_data: PromptUpdate):
     return storage.update_prompt(prompt_id, updated_prompt)
 
 
+@app.get("/")
+def root():
+    return {"message": "PromptLab API is running"}
+
+
 # NOTE: PATCH endpoint is missing! Students need to implement this.
 # It should allow partial updates (only update provided fields)
 
