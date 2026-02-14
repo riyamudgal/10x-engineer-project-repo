@@ -47,16 +47,13 @@ def list_prompts(
 ):
     prompts = storage.get_all_prompts()
     
-    # Filter by collection if specified
     if collection_id:
         prompts = filter_prompts_by_collection(prompts, collection_id)
     
-    # Search if query provided
     if search:
         prompts = search_prompts(prompts, search)
     
     # Sort by date (newest first)
-    # Note: There might be an issue with the sorting...
     prompts = sort_prompts_by_date(prompts, descending=True)
     
     return PromptList(prompts=prompts, total=len(prompts))
@@ -64,19 +61,20 @@ def list_prompts(
 
 @app.get("/prompts/{prompt_id}", response_model=Prompt)
 def get_prompt(prompt_id: str):
-    # BUG #1: This will raise a 500 error if prompt doesn't exist
-    # because we're accessing .id on None
-    # Should return 404 instead!
     prompt = storage.get_prompt(prompt_id)
-    
-    # This line causes the bug - accessing attribute on None
-    if prompt.id:
-        return prompt
+    if not prompt:
+        raise HTTPException(status_code=404, detail="Prompt not found")
+    return prompt
+
+
+@app.get("/")
+def root():
+    return {"message": "PromptLab API is running"}
 
 
 @app.post("/prompts", response_model=Prompt, status_code=201)
 def create_prompt(prompt_data: PromptCreate):
-    # Validate collection exists if provided
+    # Ensure referenced collection exists
     if prompt_data.collection_id:
         collection = storage.get_collection(prompt_data.collection_id)
         if not collection:
@@ -92,14 +90,12 @@ def update_prompt(prompt_id: str, prompt_data: PromptUpdate):
     if not existing:
         raise HTTPException(status_code=404, detail="Prompt not found")
     
-    # Validate collection if provided
     if prompt_data.collection_id:
         collection = storage.get_collection(prompt_data.collection_id)
         if not collection:
             raise HTTPException(status_code=400, detail="Collection not found")
     
-    # BUG #2: We're not updating the updated_at timestamp!
-    # The updated prompt keeps the old timestamp
+    # Full update with timestamp refresh
     updated_prompt = Prompt(
         id=existing.id,
         title=prompt_data.title,
@@ -107,19 +103,11 @@ def update_prompt(prompt_id: str, prompt_data: PromptUpdate):
         description=prompt_data.description,
         collection_id=prompt_data.collection_id,
         created_at=existing.created_at,
-        updated_at=get_current_time()  # FIXED: Now updates the timestamp
+        updated_at=get_current_time()
     )
     
     return storage.update_prompt(prompt_id, updated_prompt)
 
-
-@app.get("/")
-def root():
-    return {"message": "PromptLab API is running"}
-
-
-# NOTE: PATCH endpoint is missing! Students need to implement this.
-# It should allow partial updates (only update provided fields)
 
 @app.patch("/prompts/{prompt_id}", response_model=Prompt)
 def patch_prompt(prompt_id: str, prompt_data: PromptUpdate):
@@ -127,7 +115,6 @@ def patch_prompt(prompt_id: str, prompt_data: PromptUpdate):
     if not existing:
         raise HTTPException(status_code=404, detail="Prompt not found")
     
-    # Validate collection if provided
     if prompt_data.collection_id:
         collection = storage.get_collection(prompt_data.collection_id)
         if not collection:
@@ -178,14 +165,24 @@ def create_collection(collection_data: CollectionCreate):
 
 @app.delete("/collections/{collection_id}", status_code=204)
 def delete_collection(collection_id: str):
-    if not storage.delete_collection(collection_id):
+    # Verify collection exists before deletion
+    collection = storage.get_collection(collection_id)
+    if not collection:
         raise HTTPException(status_code=404, detail="Collection not found")
     
-    # Handle orphaned prompts - set their collection_id to None
-    all_prompts = storage.get_all_prompts()
-    for prompt in all_prompts:
-        if prompt.collection_id == collection_id:
-            prompt.collection_id = None
-            storage.update_prompt(prompt.id, prompt)
+    # Perform deletion
+    if not storage.delete_collection(collection_id):
+        raise HTTPException(status_code=500, detail="Failed to delete collection")
+    
+    # Clean up prompts that reference this collection
+    try:
+        all_prompts = storage.get_all_prompts()
+        for prompt in all_prompts:
+            if prompt.collection_id == collection_id:
+                prompt.collection_id = None
+                storage.update_prompt(prompt.id, prompt)
+    except Exception as e:
+        # Log but don't fail - deletion already succeeded
+        print(f"Warning: Failed to cleanup orphaned prompts: {e}")
     
     return None
