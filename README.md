@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 # PromptLab
 
 PromptLab is a small in-memory AI prompt engineering platform exposing
@@ -158,4 +156,3 @@ pytest -q
 ## License
 
 This repository is provided for educational purposes.
->>>>>>> b180b0a8ba055a6c740fe186edff9575ab58843c
