@@ -6,6 +6,11 @@ Students should expand these tests significantly in Week 3.
 
 import pytest
 from fastapi.testclient import TestClient
+from main import app  # Make sure to replace with your actual import path
+from app.models import Collection  # Adjust based on your actual Collection model
+from unittest.mock import MagicMock
+from app.storage import storage
+
 
 
 class TestHealth:
@@ -105,7 +110,7 @@ class TestPrompts:
         
         # NOTE: This assertion will fail due to Bug #2!
         # The updated_at should be different from original
-        # assert data["updated_at"] != original_updated_at  # Uncomment after fix
+        assert data["updated_at"] != original_updated_at  # Uncomment after fix
     
     def test_sorting_order(self, client: TestClient):
         """Test that prompts are sorted newest first.
@@ -126,7 +131,45 @@ class TestPrompts:
         prompts = response.json()["prompts"]
         
         # Newest (Second) should be first
-        assert prompts[0]["title"] == "Second"  # Will fail until Bug #3 fixed
+        assert prompts[0]["title"] == "Second"  # Will fail until Bug #3 fixedimport pytest
+
+class TestAdditionalEdgeCases:
+    
+    def test_create_prompt_with_invalid_json(self, client: TestClient):
+        """Test creating a prompt with invalid JSON payload."""
+        response = client.post("/prompts", data="Invalid JSON")
+        assert response.status_code == 422  # Unprocessable Entity or similar
+
+
+    def test_create_prompt_with_special_characters(self, client: TestClient):
+        """Test creating a prompt with special characters in title/content."""
+        special_char_data = {
+            "title": "Title with special chars! @#%^&*()",
+            "content": "Content with emojis 😃🎉 and symbols ❤️✨"
+        }
+
+        response = client.post("/prompts", json=special_char_data)
+        assert response.status_code == 201
+        data = response.json()
+        assert data["title"] == special_char_data["title"]
+        assert data["content"] == special_char_data["content"]
+
+    def test_update_prompt_with_invalid_data(self, client: TestClient, sample_prompt_data):
+        """Test updating a prompt with invalid data types."""
+        # Create a prompt first
+        create_response = client.post("/prompts", json=sample_prompt_data)
+        prompt_id = create_response.json()["id"]
+        
+        # Attempt to update with invalid data
+        response = client.put(f"/prompts/{prompt_id}", json={"title": 123, "content": 456})
+        assert response.status_code == 422  # Unprocessable Entity or similar
+
+    def test_get_prompt_with_sql_injection(self, client: TestClient):
+        """Test for SQL injection attempt in prompt retrieval."""
+        injection_string = "1' OR '1'='1"
+        
+        response = client.get(f"/prompts/{injection_string}")
+        assert response.status_code == 404  # Assuming no such prompt ID, or 400 for bad input
 
 
 class TestCollections:
@@ -181,3 +224,48 @@ class TestCollections:
         # Verify prompt no longer appears in collection-filtered results
         response = client.get(f"/prompts?collection_id={collection_id}")
         assert response.json()["total"] == 0
+
+
+    def test_update_collection_success(self, client: TestClient, sample_collection_data):
+        # Create collection first
+        create_response = client.post("/collections", json=sample_collection_data)
+        collection_id = create_response.json()["id"]
+
+        # Update collection
+        updated_data = {"name": "Updated Collection Name"}
+        response = client.put(f"/collections/{collection_id}", json=updated_data)
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["id"] == collection_id
+        assert data["name"] == "Updated Collection Name"
+
+        # Verify persistence
+        get_response = client.get(f"/collections/{collection_id}")
+        assert get_response.json()["name"] == "Updated Collection Name"
+
+    def test_update_collection_not_found(self, client: TestClient):
+        response = client.put("/collections/nonexistent-id", json={"name": "New Name"})
+        assert response.status_code == 404
+        assert response.json()["detail"] == "Collection not found"
+
+    def test_update_collection_invalid_data(self, client: TestClient, sample_collection_data):
+        create_response = client.post("/collections", json=sample_collection_data)
+        collection_id = create_response.json()["id"]
+
+        # Invalid type (name should be string)
+        response = client.put(f"/collections/{collection_id}", json={"name": 123})
+
+        assert response.status_code == 422
+
+    def test_stats_empty(self, client: TestClient):
+        response = client.get("/stats")
+        assert response.status_code == 200
+    
+        data = response.json()
+        assert data["total_prompts"] == 0
+        assert data["total_collections"] == 0
+        assert data["prompts_without_collection"] == 0
+
+    
+    

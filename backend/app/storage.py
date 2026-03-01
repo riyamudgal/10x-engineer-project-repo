@@ -49,6 +49,12 @@ class Storage:
     def get_all_collections(self) -> List[Collection]:
         return list(self._collections.values())
     
+    def update_collection(self, collection_id: str, collection: Collection) -> Optional[Collection]:
+        if collection_id not in self._collections:
+            return None
+        self._collections[collection_id] = collection
+        return collection
+    
     def delete_collection(self, collection_id: str) -> bool:
         if collection_id in self._collections:
             del self._collections[collection_id]
@@ -67,3 +73,4 @@ class Storage:
 
 # Global storage instance
 storage = Storage()
+
