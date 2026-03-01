@@ -1,167 +1,158 @@
 # PromptLab
 
-**Your AI Prompt Engineering Platform**
+PromptLab is a small in-memory AI prompt engineering platform exposing
+a simple HTTP API for creating, updating, searching, and organizing
+prompts into collections. It is intended as an educational project and
+for local development and testing; persistent storage is not provided.
 
----
+## Project Overview
 
-## Welcome to the Team! 👋
+- Simple FastAPI application providing REST endpoints for prompts and
+	collections.
+- Pydantic models enforce validation and shape of request/response data.
+- In-memory storage (see `backend/app/storage.py`) makes it easy to run
+	locally and reset state between tests.
 
-Congratulations on joining the PromptLab engineering team! You've been brought on to help us build the next generation of prompt engineering tools.
-
-### What is PromptLab?
-
-PromptLab is an internal tool for AI engineers to **store, organize, and manage their prompts**. Think of it as a "Postman for Prompts" — a professional workspace where teams can:
-
-- 📝 Store prompt templates with variables (`{{input}}`, `{{context}}`)
-- 📁 Organize prompts into collections
-- 🏷️ Tag and search prompts
-- 📜 Track version history
-- 🧪 Test prompts with sample inputs
-
-### The Current Situation
-
-The previous developer left us with a *partially working* backend. The core structure is there, but:
-
-- There are **several bugs** that need fixing
-- Some **features are incomplete**
-- The **documentation is minimal** (you'll fix that)
-- There are **no tests** worth mentioning
-- **No CI/CD pipeline** exists
-- **No frontend** has been built yet
-
-Your job over the next 4 weeks is to transform this into a **production-ready, full-stack application**.
-
----
-
-## Quick Start
-
-### Prerequisites
+## Requirements
 
 - Python 3.10+
-- Node.js 18+ (for Week 4)
-- Git
+- See `backend/requirements.txt` for exact pinned packages.
 
-### Run Locally
+## Setup
+
+1. Create and activate a virtual environment:
 
 ```bash
-# Clone the repo
-git clone <your-repo-url>
-cd promptlab
+python -m venv .venv
+source .venv/bin/activate
+```
 
-# Set up backend
-cd backend
-pip install -r requirements.txt
+2. Install dependencies:
+
+```bash
+pip install -r backend/requirements.txt
+```
+
+## Run the API (development)
+
+From the `backend/` directory run:
+
+```bash
 python main.py
 ```
 
-API runs at: http://localhost:8000
+The API will be available at http://127.0.0.1:8000
 
-API docs at: http://localhost:8000/docs
+FastAPI interactive docs are at http://127.0.0.1:8000/docs
 
-### Run Tests
+## API Endpoints
+
+All endpoints are under the root server (no prefix). Key endpoints:
+
+- GET `/` — Root: returns a simple status message.
+- GET `/health` — Health check; returns `status` and `version`.
+
+Prompts
+- GET `/prompts` — List prompts. Optional query params:
+	- `collection_id` (str) — filter by collection id
+	- `search` (str) — full-text search across title/content/description
+	Returns: `PromptList` (prompts, total)
+- GET `/prompts/{prompt_id}` — Retrieve a single prompt by id.
+- POST `/prompts` — Create a new prompt.
+	Body: `PromptCreate` (title, content, optional description, optional collection_id)
+- PUT `/prompts/{prompt_id}` — Full replace update for a prompt.
+- PATCH `/prompts/{prompt_id}` — Partial update (only provided fields changed).
+- DELETE `/prompts/{prompt_id}` — Delete a prompt (204 No Content).
+
+Collections
+- GET `/collections` — List collections. Returns `CollectionList`.
+- GET `/collections/{collection_id}` — Retrieve a collection by id.
+- POST `/collections` — Create a collection. Body: `CollectionCreate` (name, optional description)
+- DELETE `/collections/{collection_id}` — Delete a collection; prompts referencing it will have their `collection_id` cleared.
+
+## Data Models
+
+Models are defined in `backend/app/models.py` using Pydantic.
+
+- `PromptBase`:
+	- `title` (str): 1-200 chars
+	- `content` (str)
+	- `description` (Optional[str])
+	- `collection_id` (Optional[str])
+- `PromptCreate` / `PromptUpdate` — request models for creating/updating prompts.
+- `Prompt` (response model): extends `PromptBase` with
+	- `id` (str, UUID4)
+	- `created_at` (datetime UTC)
+	- `updated_at` (datetime UTC)
+
+- `CollectionBase`:
+	- `name` (str): 1-100 chars
+	- `description` (Optional[str])
+- `CollectionCreate` — request model for creating collections.
+- `Collection` (response model): extends `CollectionBase` with
+	- `id` (str, UUID4)
+	- `created_at` (datetime UTC)
+
+- `PromptList` / `CollectionList` — wrapper response models with `items` and `total` counts.
+- `HealthResponse` — `{status: str, version: str}`
+
+## Usage Examples
+
+Create a collection (curl):
 
 ```bash
-cd backend
-pytest tests/ -v
+curl -X POST http://127.0.0.1:8000/collections \
+	-H "Content-Type: application/json" \
+	-d '{"name": "Summaries", "description": "Short summary prompts"}'
 ```
 
----
+Create a prompt (curl):
 
-## Project Structure
-
-```
-promptlab/
-├── README.md                    # You are here
-├── PROJECT_BRIEF.md             # Your assignment details
-├── GRADING_RUBRIC.md            # How you'll be graded
-│
-├── backend/
-│   ├── app/
-│   │   ├── __init__.py
-│   │   ├── api.py              # FastAPI routes (has bugs!)
-│   │   ├── models.py           # Pydantic models
-│   │   ├── storage.py          # In-memory storage
-│   │   └── utils.py            # Helper functions
-│   ├── tests/
-│   │   ├── __init__.py
-│   │   ├── test_api.py         # Basic tests
-│   │   └── conftest.py         # Test fixtures
-│   ├── main.py                 # Entry point
-│   └── requirements.txt
-│
-├── frontend/                    # You'll create this in Week 4
-├── specs/                       # You'll create this in Week 2
-├── docs/                        # You'll create this in Week 2
-└── .github/                     # You'll set up CI/CD in Week 3
+```bash
+curl -X POST http://127.0.0.1:8000/prompts \
+	-H "Content-Type: application/json" \
+	-d '{"title": "Summarize", "content": "Summarize this article in 3 bullets.", "collection_id": "<id>"}'
 ```
 
----
+List prompts (with optional query):
 
-## Your Mission
+```bash
+curl "http://127.0.0.1:8000/prompts?collection_id=<id>&search=summarize"
+```
 
-### 🧪 Experimentation Encouraged!
-While we provide guidelines, **you are the engineer**. If you see a better way to solve a problem using AI, do it!
-- Want to swap the storage layer for a real database? **Go for it.**
-- Want to add Authentication? **Do it.**
-- Want to rewrite the API in a different style? **As long as tests pass, you're clear.**
+Python example using `httpx`:
 
-The goal is to learn how to build *better* software *faster* with AI. Don't be afraid to break things and rebuild them better.
+```python
+import httpx
 
-### Week 1: Fix the Backend
-- Understand this codebase using AI
-- Find and fix the bugs
-- Implement missing features
+client = httpx.Client(base_url="http://127.0.0.1:8000")
 
-### Week 2: Document Everything
-- Write proper documentation
-- Create feature specifications
-- Set up coding standards
+# Create collection
+resp = client.post("/collections", json={"name": "Examples"})
+collection = resp.json()
 
-### Week 3: Make it Production-Ready
-- Write comprehensive tests
-- Implement new features with TDD
-- Set up CI/CD and Docker
+# Create prompt
+resp = client.post("/prompts", json={"title": "Greet", "content": "Say hello to the user", "collection_id": collection['id']})
+prompt = resp.json()
 
-### Week 4: Build the Frontend
-- Create a React frontend
-- Connect it to the backend
-- Polish the user experience
+print(prompt)
+```
 
----
+## Testing
 
-## API Endpoints (Current)
+Run the test suite from the `backend/` directory:
 
-| Method | Endpoint | Description | Status |
-|--------|----------|-------------|--------|
-| GET | `/health` | Health check | ✅ Works |
-| GET | `/prompts` | List all prompts | ⚠️ Has issues |
-| GET | `/prompts/{id}` | Get single prompt | ❌ Bug |
-| POST | `/prompts` | Create prompt | ✅ Works |
-| PUT | `/prompts/{id}` | Update prompt | ⚠️ Has issues |
-| DELETE | `/prompts/{id}` | Delete prompt | ✅ Works |
-| GET | `/collections` | List collections | ✅ Works |
-| GET | `/collections/{id}` | Get collection | ✅ Works |
-| POST | `/collections` | Create collection | ✅ Works |
-| DELETE | `/collections/{id}` | Delete collection | ❌ Bug |
+```bash
+pytest -q
+```
 
----
+## Notes & Next Steps
 
-## Tech Stack
+- Storage is in-memory and not shared across processes. For production,
+	add a database-backed storage layer.
+- Authentication/authorization is not implemented.
+- Consider pagination for `/prompts` when the dataset grows.
 
-- **Backend**: Python 3.10+, FastAPI, Pydantic
-- **Frontend**: React, Vite (Week 4)
-- **Testing**: pytest
-- **DevOps**: Docker, GitHub Actions (Week 3)
+## License
 
----
-
-## Need Help?
-
-1. **Use AI tools** — This is an AI-assisted coding course!
-2. Read the `PROJECT_BRIEF.md` for detailed instructions
-3. Check `GRADING_RUBRIC.md` to understand expectations
-4. Ask questions in the course forum
-
----
-
-Good luck, and welcome to the team! 🚀
+This repository is provided for educational purposes.
