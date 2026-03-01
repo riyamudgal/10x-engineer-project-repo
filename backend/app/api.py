@@ -384,3 +384,31 @@ def delete_collection(collection_id: str):
         print(f"Warning: Failed to cleanup orphaned prompts: {e}")
 
     return None
+
+
+@app.put("/collections/{collection_id}", response_model=Collection)
+def update_collection(collection_id: str, collection_data: CollectionCreate):
+    # Verify the collection exists
+    existing_collection = storage.get_collection(collection_id)
+    if not existing_collection:
+        raise HTTPException(status_code=404, detail="Collection not found")
+    
+    # Update collection details
+    updated_collection = Collection(
+        id=existing_collection.id,
+        name=collection_data.name
+    )
+    
+    return storage.update_collection(collection_id, updated_collection)
+
+
+@app.get("/stats")
+def get_stats():
+    prompts = storage.get_all_prompts()
+    collections = storage.get_all_collections()
+
+    return {
+        "total_prompts": len(prompts),
+        "total_collections": len(collections),
+        "prompts_without_collection": len([p for p in prompts if not p.collection_id])
+    }
