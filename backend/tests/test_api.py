@@ -4,12 +4,7 @@ These tests verify the API endpoints work correctly.
 Students should expand these tests significantly in Week 3.
 """
 
-import pytest
 from fastapi.testclient import TestClient
-from main import app  # Make sure to replace with your actual import path
-from app.models import Collection  # Adjust based on your actual Collection model
-from unittest.mock import MagicMock
-from app.storage import storage
 
 
 

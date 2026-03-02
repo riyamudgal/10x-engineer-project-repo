@@ -10,7 +10,6 @@ clarity during testing.
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
-from fastapi import Query
 
 
 from app.models import (
