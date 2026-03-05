@@ -389,6 +389,22 @@ def delete_collection(collection_id: str):
 
 @app.put("/collections/{collection_id}", response_model=Collection)
 def update_collection(collection_id: str, collection_data: CollectionCreate):
+    """Update an existing collection's details.
+
+    Args:
+        collection_id (str): The identifier of the collection to update.
+        collection_data (CollectionCreate): New data for the collection containing `name`.
+
+    Returns:
+        Collection: The updated collection object with the modified details.
+
+    Raises:
+        HTTPException: 404 if the collection does not exist.
+
+    Example:
+        >>> update_collection('collection-123', CollectionCreate(name='New Collection Name'))
+        Collection(id='collection-123', name='New Collection Name', ...)
+    """
     # Verify the collection exists
     existing_collection = storage.get_collection(collection_id)
     if not existing_collection:
@@ -405,6 +421,17 @@ def update_collection(collection_id: str, collection_data: CollectionCreate):
 
 @app.get("/stats")
 def get_stats():
+    """Retrieve statistical data about prompts and collections.
+    Returns:
+        dict: A dictionary with statistical keys:
+            - `total_prompts`: Total number of prompts.
+            - `total_collections`: Total number of collections.
+            - `prompts_without_collection`: Number of prompts not associated with any collection.
+
+    Example:
+        >>> get_stats()
+        {'total_prompts': 42, 'total_collections': 5, 'prompts_without_collection': 10}
+    """
     prompts = storage.get_all_prompts()
     collections = storage.get_all_collections()
 
@@ -413,3 +440,4 @@ def get_stats():
         "total_collections": len(collections),
         "prompts_without_collection": len([p for p in prompts if not p.collection_id])
     }
+
