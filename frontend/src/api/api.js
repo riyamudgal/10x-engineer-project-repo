@@ -6,19 +6,15 @@ const API = axios.create({
 
 /* PROMPTS */
 
-export const fetchPrompts = (collectionId, search) =>
-  API.get("/prompts", {
-    params: { collection_id: collectionId, search }
-  });
+export const fetchPrompts = () =>
+  API.get("/prompts");
 
 export const createPrompt = (data) =>
   API.post("/prompts", data);
 
-export const updatePrompt = (id, data) =>
-  API.put(`/prompts/${id}`, data);
-
 export const deletePrompt = (id) =>
   API.delete(`/prompts/${id}`);
+
 
 /* COLLECTIONS */
 
@@ -30,6 +26,7 @@ export const createCollection = (data) =>
 
 export const deleteCollection = (id) =>
   API.delete(`/collections/${id}`);
+
 
 /* STATS */
 

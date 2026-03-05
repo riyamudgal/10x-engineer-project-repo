@@ -22,11 +22,13 @@ function PromptForm({ collections, refresh }) {
     setTitle("");
     setContent("");
     setDescription("");
+    setCollectionId("");
 
     refresh();
   };
 
   return (
+
     <form onSubmit={submit}>
 
       <h2>Create Prompt</h2>
@@ -54,7 +56,9 @@ function PromptForm({ collections, refresh }) {
         onChange={(e)=>setCollectionId(e.target.value)}
       >
 
-        <option value="">No Collection</option>
+        <option value="">
+          No Collection
+        </option>
 
         {collections.map(c => (
           <option key={c.id} value={c.id}>
@@ -69,6 +73,7 @@ function PromptForm({ collections, refresh }) {
       </button>
 
     </form>
+
   );
 }
 

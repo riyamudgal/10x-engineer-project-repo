@@ -1,9 +1,15 @@
 import { useEffect, useState } from "react";
-import Prompts from "./components/Prompts";
-import PromptForm from "./components/PromptForm";
+
 import Collections from "./components/Collections";
+import PromptForm from "./components/PromptForm";
+import Prompts from "./components/Prompts";
 import Stats from "./components/Stats";
-import { fetchPrompts, fetchCollections } from "./api/api";
+
+import {
+  fetchPrompts,
+  fetchCollections
+} from "./api/api";
+
 import "./styles.css";
 
 function App() {
@@ -11,28 +17,46 @@ function App() {
   const [prompts, setPrompts] = useState([]);
   const [collections, setCollections] = useState([]);
 
+  /* DATA LOADING */
+
   useEffect(() => {
 
-    const loadData = async () => {
+    async function loadData() {
 
       try {
-        const p = await fetchPrompts();
-        const c = await fetchCollections();
 
-        setPrompts(p.data.prompts);
-        setCollections(c.data.collections);
+        const promptsRes = await fetchPrompts();
+        const collectionsRes = await fetchCollections();
 
-      } catch (err) {
-        console.error("Failed to load data", err);
+        setPrompts(promptsRes.data.prompts);
+        setCollections(collectionsRes.data.collections);
+
+      } catch (error) {
+
+        console.error("Error loading data:", error);
+
       }
 
-    };
+    }
 
     loadData();
 
   }, []);
 
+  /* REFRESH FUNCTION */
+
+  const refresh = async () => {
+
+    const promptsRes = await fetchPrompts();
+    const collectionsRes = await fetchCollections();
+
+    setPrompts(promptsRes.data.prompts);
+    setCollections(collectionsRes.data.collections);
+
+  };
+
   return (
+
     <div className="container">
 
       <h1>PromptLab</h1>
@@ -43,17 +67,22 @@ function App() {
 
         <Collections
           collections={collections}
+          refresh={refresh}
         />
 
         <div className="main">
 
           <PromptForm
             collections={collections}
+            refresh={refresh}
           />
+
+          <h2 className="section-title">Prompts</h2>
 
           <Prompts
             prompts={prompts}
             collections={collections}
+            refresh={refresh}
           />
 
         </div>
