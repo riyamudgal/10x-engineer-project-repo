@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:8000"
+  baseURL: "https://automatic-eureka-xjw4xxrpqf69jj-8000.app.github.dev"
 });
 
 /* PROMPTS */
