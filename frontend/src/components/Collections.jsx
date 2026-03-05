@@ -4,21 +4,25 @@ import { createCollection, deleteCollection } from "../api/api";
 function Collections({ collections, refresh }) {
 
   const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
 
-  const add = async () => {
+  const addCollection = async () => {
 
-    await createCollection({ name });
+    try {
 
-    setName("");
+      await createCollection({
+        name: name,
+        description: description
+      });
 
-    refresh();
-  };
+      setName("");
+      setDescription("");
 
-  const remove = async (id) => {
+      refresh();
 
-    await deleteCollection(id);
-
-    refresh();
+    } catch (err) {
+      console.error("Collection error:", err);
+    }
   };
 
   return (
@@ -27,26 +31,32 @@ function Collections({ collections, refresh }) {
       <h2>Collections</h2>
 
       {collections.map(c => (
-
         <div key={c.id}>
+          <b>{c.name}</b>
 
-          {c.name}
+          {c.description && (
+            <p style={{fontSize:"12px"}}>{c.description}</p>
+          )}
 
-          <button onClick={()=>remove(c.id)}>
+          <button onClick={()=>deleteCollection(c.id)}>
             X
           </button>
-
         </div>
-
       ))}
 
       <input
-        placeholder="New collection"
+        placeholder="Collection name"
         value={name}
         onChange={(e)=>setName(e.target.value)}
       />
 
-      <button onClick={add}>
+      <input
+        placeholder="Description"
+        value={description}
+        onChange={(e)=>setDescription(e.target.value)}
+      />
+
+      <button onClick={addCollection}>
         Add
       </button>
 
