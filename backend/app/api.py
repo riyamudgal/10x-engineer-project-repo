@@ -142,7 +142,7 @@ def create_prompt(prompt_data: PromptCreate):
         prompt_data (PromptCreate): Request body containing the prompt
             fields: `title` (str), `content` (str), optional
             `description` (str) and optional `collection_id` (str).
-
+git 
     Returns:
         Prompt: The created Prompt including generated `id`, `created_at`
             and `updated_at` timestamps.
