@@ -128,3 +128,175 @@ button:hover{
   border-radius:8px;
   margin-bottom:12px;
 }
+
+/* PROMPTS LIST */
+
+.prompts-list{
+  max-width:700px;
+  margin:auto;
+}
+
+/* PROMPT ROW */
+
+.prompt-row{
+  background:#132554;
+  border-radius:8px;
+  margin-bottom:12px;
+  padding:12px;
+}
+
+/* HEADER */
+
+.prompt-header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+/* TITLE */
+
+.prompt-title{
+  cursor:pointer;
+  font-weight:600;
+}
+
+/* DETAILS */
+
+.prompt-details{
+  margin-top:10px;
+  padding-left:25px;
+  opacity:0.9;
+}
+
+/* DELETE BUTTON */
+
+.delete-selected{
+  margin-bottom:15px;
+  background:#ef4444;
+  border:none;
+  padding:8px 14px;
+  border-radius:6px;
+  color:white;
+  cursor:pointer;
+}
+
+.delete-selected:hover{
+  background:#dc2626;
+}
+
+
+/* FORM LAYOUT */
+
+.prompt-form{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.form-row{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+
+.form-row label{
+  width:120px;
+  font-weight:600;
+}
+
+.form-row input,
+.form-row textarea,
+.form-row select{
+  flex:1;
+  padding:8px;
+  border-radius:6px;
+}
+
+/* PROMPT FIELD */
+
+.prompt-field{
+  margin-bottom:6px;
+}
+
+
+/* PAGE LAYOUT */
+
+.page-layout{
+  display:grid;
+  grid-template-columns: 350px 1fr;
+  gap:40px;
+  max-width:1200px;
+  margin:auto;
+  padding:40px;
+}
+
+/* LEFT PANEL */
+
+.left-panel{
+  background:#0f2045;
+  padding:20px;
+  border-radius:10px;
+  height:fit-content;
+}
+
+/* RIGHT PANEL */
+
+.right-panel{
+  display:flex;
+  justify-content:center;
+}
+
+/* CREATE CARD */
+
+.create-card{
+  background:#e5e7eb;
+  padding:25px;
+  border-radius:10px;
+  width:500px;
+}
+
+/* PROMPT ROW */
+
+.prompt-row{
+  background:#1c2f63;
+  padding:10px;
+  border-radius:6px;
+  margin-bottom:8px;
+}
+
+.prompt-header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.prompt-title{
+  cursor:pointer;
+  font-weight:500;
+}
+
+/* CREATE FORM TEXT */
+
+.create-card{
+  background:#e5e7eb;
+  padding:25px;
+  border-radius:10px;
+  width:500px;
+  color:#111;   /* FIX TEXT COLOR */
+}
+
+/* INPUTS */
+
+.create-card input,
+.create-card textarea,
+.create-card select{
+  color:#111;
+  background:white;
+  border:1px solid #ccc;
+}
+
+.prompt-title{
+  color:white;
+  cursor:pointer;
+  font-weight:500;
+}

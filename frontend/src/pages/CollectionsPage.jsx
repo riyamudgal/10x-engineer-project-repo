@@ -1,14 +1,15 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 
-import { fetchCollections } from "../api/api"
+import { fetchCollections } from "../api/api";
 
-import Collections from "../components/Collections"
+import Collections from "../components/Collections";
+import CollectionForm from "../components/CollectionForm";
 
 function CollectionsPage(){
 
   const [collections,setCollections] = useState([])
 
-  const refresh = async () => {
+  const refresh = async ()=>{
 
     const res = await fetchCollections()
 
@@ -32,22 +33,37 @@ function CollectionsPage(){
 
   return(
 
-  <div className="container">
+    <div className="page-layout">
 
-    <h1>Collections</h1>
+      {/* LEFT PANEL */}
 
-    <div className="card-light">
+      <div className="left-panel">
 
-      <Collections
-        collections={collections}
-        refresh={refresh}
-      />
+        <Collections
+          collections={collections}
+          refresh={refresh}
+        />
+
+      </div>
+
+      {/* RIGHT PANEL */}
+
+      <div className="right-panel">
+
+        <div className="create-card">
+
+          <CollectionForm
+            refresh={refresh}
+          />
+
+        </div>
+
+      </div>
 
     </div>
 
-  </div>
+  )
 
-)
 }
 
 export default CollectionsPage

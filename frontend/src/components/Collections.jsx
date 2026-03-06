@@ -1,67 +1,72 @@
-import { useState } from "react";
-import { createCollection, deleteCollection } from "../api/api";
+import { useState } from "react"
+import { deleteCollection } from "../api/api"
 
-function Collections({ collections, refresh }) {
+function Collections({collections, refresh}){
 
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
+  const [selected,setSelected] = useState([])
 
-  const addCollection = async () => {
+  const toggleSelect = (id)=>{
 
-    try {
-
-      await createCollection({
-        name: name,
-        description: description
-      });
-
-      setName("");
-      setDescription("");
-
-      refresh();
-
-    } catch (err) {
-      console.error("Collection error:", err);
+    if(selected.includes(id)){
+      setSelected(selected.filter(x=>x!==id))
     }
-  };
+    else{
+      setSelected([...selected,id])
+    }
 
-  return (
-    <div className="sidebar">
+  }
 
-      <h2>Collections</h2>
+  const deleteSelected = async ()=>{
 
-      {collections.map(c => (
-        <div key={c.id}>
-          <b>{c.name}</b>
+    for(let id of selected){
+      await deleteCollection(id)
+    }
 
-          {c.description && (
-            <p style={{fontSize:"12px"}}>{c.description}</p>
-          )}
+    setSelected([])
 
-          <button onClick={()=>deleteCollection(c.id)}>
-            X
-          </button>
+    refresh()
+
+  }
+
+  return(
+
+    <div>
+
+      {selected.length>0 &&(
+
+        <button
+          className="delete-selected"
+          onClick={deleteSelected}
+        >
+          Delete Selected
+        </button>
+
+      )}
+
+      {collections.map(c=>(
+
+        <div key={c.id} className="prompt-row">
+
+          <div className="prompt-header">
+
+            <input
+              type="checkbox"
+              checked={selected.includes(c.id)}
+              onChange={()=>toggleSelect(c.id)}
+            />
+
+            <span>{c.name}</span>
+
+          </div>
+
         </div>
+
       ))}
 
-      <input
-        placeholder="Collection name"
-        value={name}
-        onChange={(e)=>setName(e.target.value)}
-      />
-
-      <input
-        placeholder="Description"
-        value={description}
-        onChange={(e)=>setDescription(e.target.value)}
-      />
-
-      <button onClick={addCollection}>
-        Add
-      </button>
-
     </div>
-  );
+
+  )
+
 }
 
-export default Collections;
+export default Collections

@@ -35,32 +35,35 @@ function PromptsPage(){
 
   },[])
 
-  return(
+  return (
 
-  <div className="container">
+  <div className="page-layout">
 
-    <h1>Prompts</h1>
+    {/* LEFT PANEL */}
 
-    {/* CREATE PROMPT CENTER CARD */}
-
-    <div className="create-prompt card-light">
-
-      <PromptForm
-        collections={collections}
-        refresh={refresh}
-      />
-
-    </div>
-
-    {/* PROMPT GRID */}
-
-    <div className="prompts-grid">
+    <div className="left-panel">
 
       <Prompts
         prompts={prompts}
         collections={collections}
         refresh={refresh}
       />
+
+    </div>
+
+
+    {/* RIGHT PANEL */}
+
+    <div className="right-panel">
+
+      <div className="create-card">
+
+        <PromptForm
+          collections={collections}
+          refresh={refresh}
+        />
+
+      </div>
 
     </div>
 
