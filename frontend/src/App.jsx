@@ -1,93 +1,27 @@
-import { useEffect, useState } from "react";
+import { Routes, Route } from "react-router-dom";
 
-import Collections from "./components/Collections";
-import PromptForm from "./components/PromptForm";
-import Prompts from "./components/Prompts";
-import Stats from "./components/Stats";
+import Navbar from "./components/Navbar";
 
-import {
-  fetchPrompts,
-  fetchCollections
-} from "./api/api";
-
-import "./styles.css";
+import Dashboard from "./pages/Dashboard";
+import PromptsPage from "./pages/PromptsPage";
+import CollectionsPage from "./pages/CollectionsPage";
 
 function App() {
 
-  const [prompts, setPrompts] = useState([]);
-  const [collections, setCollections] = useState([]);
-
-  /* DATA LOADING */
-
-  useEffect(() => {
-
-    async function loadData() {
-
-      try {
-
-        const promptsRes = await fetchPrompts();
-        const collectionsRes = await fetchCollections();
-
-        setPrompts(promptsRes.data.prompts);
-        setCollections(collectionsRes.data.collections);
-
-      } catch (error) {
-
-        console.error("Error loading data:", error);
-
-      }
-
-    }
-
-    loadData();
-
-  }, []);
-
-  /* REFRESH FUNCTION */
-
-  const refresh = async () => {
-
-    const promptsRes = await fetchPrompts();
-    const collectionsRes = await fetchCollections();
-
-    setPrompts(promptsRes.data.prompts);
-    setCollections(collectionsRes.data.collections);
-
-  };
-
   return (
+    <div>
 
-    <div className="container">
+      <Navbar />
 
-      <h1>PromptLab</h1>
+      <Routes>
 
-      <Stats />
+        <Route path="/" element={<Dashboard />} />
 
-      <div className="layout">
+        <Route path="/prompts" element={<PromptsPage />} />
 
-        <Collections
-          collections={collections}
-          refresh={refresh}
-        />
+        <Route path="/collections" element={<CollectionsPage />} />
 
-        <div className="main">
-
-          <PromptForm
-            collections={collections}
-            refresh={refresh}
-          />
-
-          <h2 className="section-title">Prompts</h2>
-
-          <Prompts
-            prompts={prompts}
-            collections={collections}
-            refresh={refresh}
-          />
-
-        </div>
-
-      </div>
+      </Routes>
 
     </div>
   );

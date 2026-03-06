@@ -1,35 +1,35 @@
 import { deletePrompt } from "../api/api";
 
-function Prompts({ prompts, collections, refresh }) {
+function Prompts({prompts, collections, refresh}){
 
   const getCollectionName = (id) => {
 
-    const c = collections.find(x => x.id === id);
+    const c = collections.find(x => x.id === id)
 
-    return c ? c.name : "None";
-  };
+    return c ? c.name : "None"
+  }
 
   const remove = async (id) => {
 
-    await deletePrompt(id);
+    await deletePrompt(id)
 
-    refresh();
-  };
+    refresh()
 
-  return (
+  }
 
-    <div className="prompts">
+  return(
 
+    <>
       {prompts.map(p => (
 
-        <div key={p.id} className="card">
+        <div key={p.id} className="prompt-card">
 
           <h3>{p.title}</h3>
 
           <p>{p.content}</p>
 
           {p.description && (
-            <p className="desc">
+            <p className="prompt-desc">
               {p.description}
             </p>
           )}
@@ -48,10 +48,8 @@ function Prompts({ prompts, collections, refresh }) {
         </div>
 
       ))}
-
-    </div>
-
-  );
+    </>
+  )
 }
 
-export default Prompts;
+export default Prompts
